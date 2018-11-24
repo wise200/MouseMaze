@@ -4,7 +4,7 @@ from queue import Queue
 from pygame import Rect
 import ctypes
 class Maze:
-	def __init__(self, rows, cols):
+	def __init__(self, rows, cols, isMac=False):
 		self.maze = [[BabyCell(row,col,self) for col in range(cols)] for row in range(rows)]
 		for row in self.maze:
 			for cell in row:
@@ -33,7 +33,7 @@ class Maze:
 		for row in self.maze:
 			for cell in row:
 				cell.visited = False
-		self.startScreen()
+		self.startScreen(isMac)
 		self.mouse = Mouse(self.graph[0][0], self.boxSize)
 		
 	def startScreen(self, isMac=False):
@@ -49,7 +49,7 @@ class Maze:
 		self.boxSize = min(width, height)
 		self.sizeCalc = self.boxSize+1
 		self.left = (dims[0] - self.sizeCalc * len(self.maze[0])) // 2
-		self.top = 0 #125
+		self.top = 0
 		self.clock = pygame.time.Clock()
 		
 	def show(self, frameRate=5):
