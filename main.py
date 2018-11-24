@@ -1,6 +1,6 @@
 from classes import Maze
 from random import choice
-maze = Maze(15,15)
+maze = Maze(60,60)
 mouse = maze.mouse
 visited = set()
 stack = [mouse.node]
@@ -14,4 +14,4 @@ while len(stack) > 0:
 		visited.add(nb)
 		stack.append(cell)
 		stack.append(nb)
-maze.show(20)
+maze.show(0)

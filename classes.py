@@ -4,7 +4,7 @@ from queue import Queue
 from pygame import Rect
 import ctypes
 class Maze:
-	def __init__(self, rows, cols, isMac=False):
+	def __init__(self, rows, cols, cheeses=0, isMac=False):
 		self.maze = [[BabyCell(row,col,self) for col in range(cols)] for row in range(rows)]
 		for row in self.maze:
 			for cell in row:
@@ -30,6 +30,7 @@ class Maze:
 					cell.addNeighbor(self.graph[r][c+1])
 				if not babyCell.floor:
 					cell.addNeighbor(self.graph[r+1][c])
+		
 		for row in self.maze:
 			for cell in row:
 				cell.visited = False
@@ -66,7 +67,7 @@ class Maze:
 	def draw(self):
 		self.screen.fill((0,0,0))
 		white = (255,255,255)
-		purple = (150,0,150)
+		purple = (255,20,150)
 		#Draw maze
 		outline = pygame.Rect(self.left, self.top, len(self.maze[0]) * self.sizeCalc, len(self.maze) * self.sizeCalc)
 		pygame.draw.rect(self.screen, white, outline, 1)
@@ -79,8 +80,10 @@ class Maze:
 				if cell.wall:
 					pygame.draw.line(self.screen, white, (x,y-self.boxSize), (x,y))
 				if cell.visited:
-					rect = Rect(x-self.boxSize, y-self.boxSize, self.boxSize, self.boxSize)
-					pygame.draw.rect(self.screen, purple, rect)
+					#rect = Rect(x-self.boxSize, y-self.boxSize, self.boxSize, self.boxSize)
+					#pygame.draw.rect(self.screen, purple, rect)
+					pos = (x-self.boxSize//2, y-self.boxSize//2)
+					pygame.draw.circle(self.screen, purple, pos, self.boxSize//4)
 		#draw mouse
 		x = self.mouse.node.col * self.sizeCalc + self.left
 		y = self.mouse.node.row * self.sizeCalc + self.top
@@ -110,6 +113,7 @@ class Cell:
 		self.row = row
 		self.col = col
 		self.neighbors = []
+		self.hasCheese = True
 		
 	def addNeighbor(self, neighbor):
 		self.neighbors.append(neighbor)
