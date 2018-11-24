@@ -1,8 +1,14 @@
-from random import choice
+from random import choice, sample
 import pygame
 from queue import Queue
 from pygame import Rect
 import ctypes
+
+white = (255,255,255)
+purple = (255,20,150)
+yellow = (255,255,0)
+
+
 class Maze:
 	def __init__(self, rows, cols, cheeses=0, isMac=False):
 		self.maze = [[BabyCell(row,col,self) for col in range(cols)] for row in range(rows)]
@@ -21,7 +27,7 @@ class Maze:
 				stack.append(cell.popNeighbor())
 		#self.maze[0][0].wall, self.maze[0][0].floor = False, False
 		#Create traversable graph from maze
-		self.graph = [[Cell(row,col) for col in range(cols)] for row in range(rows)]
+		self.graph = [[Node(row,col) for col in range(cols)] for row in range(rows)]
 		for r in range(rows):
 			for c in range(cols):
 				cell = self.graph[r][c]
@@ -30,7 +36,11 @@ class Maze:
 					cell.addNeighbor(self.graph[r][c+1])
 				if not babyCell.floor:
 					cell.addNeighbor(self.graph[r+1][c])
-		
+		if cheeses > rows * cols:
+			raise AttributeError('Too much cheese!')
+		cheesePositions = sample(range(rows*cols), cheeses)
+		for pos in cheesePositions:
+			self.graph[pos//cols][pos%cols].hasCheese = True
 		for row in self.maze:
 			for cell in row:
 				cell.visited = False
@@ -53,7 +63,8 @@ class Maze:
 		self.top = 0
 		self.clock = pygame.time.Clock()
 		
-	def show(self, frameRate=5):
+	def show(self, frameRate=5, save=False, fileName='maze', show=True):
+		frame = 0
 		while not self.mouse.queue.empty():
 			if frameRate != 0:
 				self.clock.tick(frameRate)
@@ -63,11 +74,13 @@ class Maze:
 			self.draw()
 			self.mouseCell().visited = True
 			self.mouse.node = self.mouse.queue.get()
+			if save:
+				frame += 1
+				pygame.image.save(self.screen, fileName + str(frame) + '.png')
+			pygame.display.flip()
 			
 	def draw(self):
 		self.screen.fill((0,0,0))
-		white = (255,255,255)
-		purple = (255,20,150)
 		#Draw maze
 		outline = pygame.Rect(self.left, self.top, len(self.maze[0]) * self.sizeCalc, len(self.maze) * self.sizeCalc)
 		pygame.draw.rect(self.screen, white, outline, 1)
@@ -84,13 +97,15 @@ class Maze:
 					#pygame.draw.rect(self.screen, purple, rect)
 					pos = (x-self.boxSize//2, y-self.boxSize//2)
 					pygame.draw.circle(self.screen, purple, pos, self.boxSize//4)
+				if self.graph[cell.row][cell.col].hasCheese:
+					pos = (x-self.boxSize//2, y-self.boxSize//2)
+					pygame.draw.circle(self.screen, yellow, pos, self.boxSize//4)
 		#draw mouse
 		x = self.mouse.node.col * self.sizeCalc + self.left
 		y = self.mouse.node.row * self.sizeCalc + self.top
 		
 		rect = Rect(x, y, self.boxSize, self.boxSize)
 		self.screen.blit(self.mouse.img, rect)
-		pygame.display.flip()
 		
 	def mouseCell(self):
 		node = self.mouse.node
@@ -108,12 +123,12 @@ class Mouse:
 	def moveTo(self, cell):
 		self.queue.put(cell)
 
-class Cell:
+class Node:
 	def __init__(self, row, col):
 		self.row = row
 		self.col = col
 		self.neighbors = []
-		self.hasCheese = True
+		self.hasCheese = False
 		
 	def addNeighbor(self, neighbor):
 		self.neighbors.append(neighbor)
