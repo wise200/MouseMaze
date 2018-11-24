@@ -14,4 +14,4 @@ while len(stack) > 0:
 		visited.add(nb)
 		stack.append(cell)
 		stack.append(nb)
-maze.show(15)
+maze.show(20)

@@ -2,6 +2,7 @@ from random import choice
 import pygame
 from queue import Queue
 from pygame import Rect
+import ctypes
 class Maze:
 	def __init__(self, rows, cols):
 		self.maze = [[BabyCell(row,col,self) for col in range(cols)] for row in range(rows)]
@@ -35,27 +36,31 @@ class Maze:
 		self.startScreen()
 		self.mouse = Mouse(self.graph[0][0], self.boxSize)
 		
-	def startScreen(self):
+	def startScreen(self, isMac=False):
 		pygame.init()
 		displayInfo = pygame.display.Info()
 		dims = (displayInfo.current_w, displayInfo.current_h)
-		self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+		if not isMac:
+			ctypes.windll.user32.SetProcessDPIAware()
+			dims = (ctypes.windll.user32.GetSystemMetrics(0),ctypes.windll.user32.GetSystemMetrics(1))
+		self.screen = pygame.display.set_mode(dims,pygame.FULLSCREEN)
 		width = dims[0] // len(self.maze[0])
-		height = dims[1] // len(self.maze)
-		self.boxSize = min(width, height) - 17
+		height = dims[1] // len(self.maze) - 1
+		self.boxSize = min(width, height)
 		self.sizeCalc = self.boxSize+1
 		self.left = (dims[0] - self.sizeCalc * len(self.maze[0])) // 2
-		self.top = 125
+		self.top = 0 #125
 		self.clock = pygame.time.Clock()
 		
 	def show(self, frameRate=5):
 		while not self.mouse.queue.empty():
-			self.clock.tick(frameRate)
+			if frameRate != 0:
+				self.clock.tick(frameRate)
 			for event in pygame.event.get():
 				if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 					sys.exit(pygame.quit())
 			self.draw()
-			self.getCell(self.mouse.node).visited = True
+			self.mouseCell().visited = True
 			self.mouse.node = self.mouse.queue.get()
 			
 	def draw(self):
@@ -84,7 +89,8 @@ class Maze:
 		self.screen.blit(self.mouse.img, rect)
 		pygame.display.flip()
 		
-	def getCell(self, node):
+	def mouseCell(self):
+		node = self.mouse.node
 		return self.maze[node.row][node.col]
 
 class Mouse:
