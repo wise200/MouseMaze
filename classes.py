@@ -4,9 +4,11 @@ from queue import Queue
 from pygame import Rect
 import ctypes
 
-white = (255,255,255)
-purple = (255,20,150)
-yellow = (255,255,0)
+colors = {'white':(255,255,255),'black':(0,0,0),'pink':(255,20,150),'orange':(255,152,0),'red':(255,0,0),'yellow':(255,255,0),'mint':(0,219,179),'purple':(110,37,148),'green':(0,255,142),'blue':(68,105,255)}
+beanColors = dict(colors)
+del beanColors['white']
+del beanColors['black']
+del beanColors['yellow']
 
 
 class Maze:
@@ -73,33 +75,37 @@ class Maze:
 					sys.exit(pygame.quit())
 			self.draw()
 			self.mouseCell().visited = True
-			self.mouse.node = self.mouse.queue.get()
+			move = self.mouse.queue.get()
+			if move == 'eat':
+				self.mouse.node.hasCheese = False
+			else:
+				self.mouse.node = move
 			if save:
 				frame += 1
 				pygame.image.save(self.screen, fileName + str(frame) + '.png')
 			pygame.display.flip()
 			
 	def draw(self):
-		self.screen.fill((0,0,0))
+		self.screen.fill(colors['black'])
 		#Draw maze
 		outline = pygame.Rect(self.left, self.top, len(self.maze[0]) * self.sizeCalc, len(self.maze) * self.sizeCalc)
-		pygame.draw.rect(self.screen, white, outline, 1)
+		pygame.draw.rect(self.screen, colors['white'], outline, 1)
 		for row in self.maze:
 			for cell in row:
 				x = (cell.col+1) * self.sizeCalc + self.left
 				y = (cell.row+1) * self.sizeCalc + self.top
 				if cell.floor:
-					pygame.draw.line(self.screen, white, (x-self.boxSize,y), (x,y))
+					pygame.draw.line(self.screen, colors['white'], (x-self.boxSize,y), (x,y))
 				if cell.wall:
-					pygame.draw.line(self.screen, white, (x,y-self.boxSize), (x,y))
+					pygame.draw.line(self.screen, colors['white'], (x,y-self.boxSize), (x,y))
 				if cell.visited:
 					#rect = Rect(x-self.boxSize, y-self.boxSize, self.boxSize, self.boxSize)
 					#pygame.draw.rect(self.screen, purple, rect)
 					pos = (x-self.boxSize//2, y-self.boxSize//2)
-					pygame.draw.circle(self.screen, purple, pos, self.boxSize//4)
+					pygame.draw.circle(self.screen, colors['pink'], pos, self.boxSize//4)
 				if self.graph[cell.row][cell.col].hasCheese:
 					pos = (x-self.boxSize//2, y-self.boxSize//2)
-					pygame.draw.circle(self.screen, yellow, pos, self.boxSize//4)
+					pygame.draw.circle(self.screen, colors['yellow'], pos, self.boxSize//4)
 		#draw mouse
 		x = self.mouse.node.col * self.sizeCalc + self.left
 		y = self.mouse.node.row * self.sizeCalc + self.top
@@ -122,7 +128,12 @@ class Mouse:
 		
 	def moveTo(self, cell):
 		self.queue.put(cell)
+	
+	
+	def eatCheese(self):
+		self.queue.put('eat')
 
+		
 class Node:
 	def __init__(self, row, col):
 		self.row = row
@@ -143,6 +154,7 @@ class BabyCell:
 		self.wall = True
 		self.neighbors =set()
 		self.visited = False
+		self.color = choice(list(colors.values()))
 	
 	def addNeighbors(self):
 		self.neighbors.add(self.top())
