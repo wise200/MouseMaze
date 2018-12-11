@@ -100,7 +100,7 @@ class Maze:
 					pygame.draw.line(self.screen, colors['white'], (x,y-self.boxSize), (x,y))
 				if cell.visited:
 					#rect = Rect(x-self.boxSize, y-self.boxSize, self.boxSize, self.boxSize)
-					#pygame.draw.rect(self.screen, purple, rect)
+					#pygame.draw.rect(self.screen, colors['pink'], rect)
 					pos = (x-self.boxSize//2, y-self.boxSize//2)
 					pygame.draw.circle(self.screen, colors['pink'], pos, self.boxSize//4)
 				if self.graph[cell.row][cell.col].hasCheese:
@@ -117,6 +117,10 @@ class Maze:
 		node = self.mouse.node
 		return self.maze[node.row][node.col]
 
+class Hand:
+	def __init__(self, node):
+		self.node = node
+		
 class Mouse:
 	def __init__(self, node, size):
 		self.node = node

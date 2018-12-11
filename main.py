@@ -22,4 +22,4 @@ def dfs(maze):
 	maze.show(30)
 	print(count)
 
-dfs(Maze(15,15,10))
+dfs(Maze(25,25,10))
